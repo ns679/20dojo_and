@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">dojo2020</string>
+    <string name="reload">reload</string>
 </resources>
