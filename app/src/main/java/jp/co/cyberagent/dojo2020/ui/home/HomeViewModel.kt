@@ -7,23 +7,26 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
-import jp.co.cyberagent.dojo2020.data.DefaultUserInfoRepository
-import jp.co.cyberagent.dojo2020.data.UserInfoRepository
+import jp.co.cyberagent.dojo2020.DI
 import jp.co.cyberagent.dojo2020.data.model.Memo
-import jp.co.cyberagent.dojo2020.test.FakeRepository
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class HomeViewModel(context: Context) : ViewModel() {
-    private val memoRepository = FakeRepository
-    private val firebaseUserInfoRepository: UserInfoRepository = DefaultUserInfoRepository()
+    private val memoRepository = DI.injectDefaultMemoRepository(context)
+    private val draftRepository = DI.injectDefaultDraftRepository(context)
+    private val firebaseUserInfoRepository = DI.injectDefaultUserInfoRepository()
 
-    val user= firebaseUserInfoRepository.fetchUserInfo()
+    val user = firebaseUserInfoRepository.fetchUserInfo()
 
     val memoListLiveData = liveData<List<Memo>> {
         user.collect { userInfo ->
             emitSource(memoRepository.fetchAllMemo(userInfo?.uid).asLiveData())
         }
+    }
+
+    val draftListLiveData = liveData {
+        emitSource(draftRepository.fetchAllDraft().asLiveData())
     }
 
     fun filter() = viewModelScope.launch {

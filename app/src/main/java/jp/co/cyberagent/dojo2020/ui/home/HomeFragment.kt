@@ -1,16 +1,17 @@
 package jp.co.cyberagent.dojo2020.ui.home
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import jp.co.cyberagent.dojo2020.R
+import jp.co.cyberagent.dojo2020.data.model.Memo
 import jp.co.cyberagent.dojo2020.databinding.FragmentHomeBinding
-import jp.co.cyberagent.dojo2020.ui.MemoAdapter
-import jp.co.cyberagent.dojo2020.ui.widget.CustomBottomSheetDialog.Companion.TAG
+import jp.co.cyberagent.dojo2020.ui.TextAdapter
+import jp.co.cyberagent.dojo2020.util.Left
+import jp.co.cyberagent.dojo2020.util.Right
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
@@ -46,21 +47,25 @@ class HomeFragment : Fragment() {
                 false
             )
 
-            val memoAdapter = MemoAdapter(View.OnClickListener {
-                Log.d(TAG, "selected")
-
+            val textAdapter = TextAdapter() {
                 val action = HomeFragmentDirections.actionHomeFragmentToMemoEditFragment("test_id")
                 findNavController().navigate(action)
-            })
+            }
 
-            homeViewModel.memoListLiveData.observe(viewLifecycleOwner) {
-                memoAdapter.memoList = it
+            homeViewModel.draftListLiveData.observe(viewLifecycleOwner) { drafts ->
+                val memoList = drafts.map {
+                    Right(Memo(it.id, it.title, it.content, it.startTime, it.category))
+                }
+
+                val draftList = drafts.map { Left(it) }
+
+                textAdapter.textList = (memoList + draftList)
             }
 
             recyclerView.apply {
                 setHasFixedSize(true)
                 layoutManager = linearLayoutManager
-                adapter = memoAdapter
+                adapter = textAdapter
             }
         }
     }
@@ -71,7 +76,7 @@ class HomeFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_home,menu)
+        inflater.inflate(R.menu.menu_home, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -90,5 +95,5 @@ class HomeFragment : Fragment() {
             }
         }
     }
-    
+
 }
