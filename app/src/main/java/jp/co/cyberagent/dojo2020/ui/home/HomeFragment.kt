@@ -33,12 +33,8 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         with(binding) {
-            homeToCreateButton.setOnClickListener {
+            createMemoFloatingActionButton.setOnClickListener {
                 findNavController().navigate(R.id.action_homeFragment_to_memoCreateFragment)
-            }
-
-            homeToProfileButton.setOnClickListener {
-                findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
             }
 
             val linearLayoutManager = LinearLayoutManager(

@@ -6,27 +6,19 @@
 
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/recycler_view"
         android:layout_margin="@dimen/view_recyclerview_margin" />
 
-    <Button
-        android:id="@+id/home_to_create_button"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/create_memo_floating_action_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="home_to_create"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:layout_marginBottom="@dimen/small_margin"
+        android:src="@drawable/ic_add_white"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/home_to_profile_button" />
-
-    <Button
-        android:id="@+id/home_to_profile_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="home_to_profile"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/home_to_create_button"
         app:layout_constraintRight_toRightOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
