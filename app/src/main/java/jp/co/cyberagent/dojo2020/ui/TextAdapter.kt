@@ -55,7 +55,6 @@ class TextAdapter(
                 showImage(image)
 
                 setOnClickListener {
-                    Log.d(TAG, "onClicked timer")
                     isStarting = !isStarting
 
                     showImage(if (isStarting) startingImage else stoppingImage)
