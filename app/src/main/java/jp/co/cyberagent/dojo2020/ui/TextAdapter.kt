@@ -1,14 +1,18 @@
 package jp.co.cyberagent.dojo2020.ui
 
+import android.graphics.drawable.Drawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import jp.co.cyberagent.dojo2020.R
 import jp.co.cyberagent.dojo2020.data.model.Draft
 import jp.co.cyberagent.dojo2020.data.model.Memo
 import jp.co.cyberagent.dojo2020.databinding.ItemMemoBinding
+import jp.co.cyberagent.dojo2020.ui.widget.CustomBottomSheetDialog.Companion.TAG
 import jp.co.cyberagent.dojo2020.util.Left
 import jp.co.cyberagent.dojo2020.util.Right
 import jp.co.cyberagent.dojo2020.util.Text
@@ -37,13 +41,25 @@ class TextAdapter(
         }
 
         fun setText(text: Text) {
-            val image = when (text) {
-                is Left -> stoppingImage
-                is Right -> startingImage
+            fun ImageButton.showImage(drawable: Drawable?) {
+                Glide.with(this).load(drawable).into(this)
             }
 
-            binding.timerImageButton.also {
-                Glide.with(it).load(image).into(it)
+            var (mutableImage, isStarting) = when (text) {
+                is Left -> stoppingImage to false
+                is Right -> startingImage to true
+            }
+            val image = mutableImage
+
+            binding.timerImageButton.apply {
+                showImage(image)
+
+                setOnClickListener {
+                    Log.d(TAG, "onClicked timer")
+                    isStarting = !isStarting
+
+                    showImage(if (isStarting) startingImage else stoppingImage)
+                }
             }
 
             when (text) {
