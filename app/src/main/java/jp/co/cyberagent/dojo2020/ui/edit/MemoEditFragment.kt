@@ -45,6 +45,11 @@ class MemoEditFragment : Fragment() {
             val spinnerAdapter = SpinnerAdapter.getInstance(requireContext()).apply {
                 setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             }
+
+            profileIconImageButton.setOnClickListener {
+                showProfileScreen()
+            }
+
             val memoId = args.memoId
 
             memoEditViewModel.memoInfoLiveData.observe(viewLifecycleOwner) {
@@ -99,6 +104,10 @@ class MemoEditFragment : Fragment() {
 
     private fun ImageButton.showImage(uri: Uri) {
         Glide.with(this).load(uri).circleCrop().into(this)
+    }
+
+    private fun showProfileScreen() {
+        findNavController().navigate(R.id.action_memoEditFragment_to_profileFragment)
     }
 
 }

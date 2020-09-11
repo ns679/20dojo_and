@@ -60,6 +60,8 @@ class MemoCreateFragment : Fragment() {
                 setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             }
 
+            profileIconImageButton.setOnClickListener { showProfileScreen() }
+
             memoCreateViewModel.userLiveData.observe(viewLifecycleOwner) { firebaseUserInfo ->
                 val uri = firebaseUserInfo?.imageUri ?: return@observe
 
@@ -117,5 +119,9 @@ class MemoCreateFragment : Fragment() {
 
     private fun ImageButton.showImage(uri: Uri) {
         Glide.with(this).load(uri).circleCrop().into(this)
+    }
+
+    private fun showProfileScreen() {
+        findNavController().navigate(R.id.action_memoCreateFragment_to_profileFragment)
     }
 }

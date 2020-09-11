@@ -49,5 +49,8 @@
         <argument
             android:name="memo_id"
             app:argType="string" />
+        <action
+            android:id="@+id/action_memoEditFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
     </fragment>
 </navigation>
