@@ -1,7 +1,6 @@
 package jp.co.cyberagent.dojo2020.ui
 
 import android.graphics.drawable.Drawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +17,7 @@ import jp.co.cyberagent.dojo2020.util.Text
 import java.util.Collections.emptyList
 
 class TextAdapter(
-    private val onItemClickListener: View.OnClickListener
+    private val onItemClickListener: (id: String) -> Unit
 ) : RecyclerView.Adapter<TextAdapter.RecyclerViewHolder>() {
 
     var textList: List<Text> = emptyList()
@@ -104,7 +103,14 @@ class TextAdapter(
         val text = textList[position]
 
         holder.setText(text)
-        holder.setOnItemClickListener(onItemClickListener)
+        holder.setOnItemClickListener {
+            onItemClickListener(
+                when (text) {
+                    is Left -> text.value.id
+                    is Right -> text.value.id
+                }
+            )
+        }
     }
 
     override fun getItemCount() = textList.size

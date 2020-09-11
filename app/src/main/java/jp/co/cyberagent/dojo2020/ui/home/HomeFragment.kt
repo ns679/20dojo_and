@@ -41,7 +41,9 @@ class HomeFragment : Fragment() {
             createMemoFloatingActionButton.setOnClickListener { showMemoCreateScreen() }
             profileIconImageButton.setOnClickListener { showProfileScreen() }
 
-            val textAdapter = TextAdapter { showMemoEditScreen("") }
+            val textAdapter = TextAdapter {
+                showMemoEditScreen(it)
+            }
             val linearLayoutManager = LinearLayoutManager(
                 context,
                 LinearLayoutManager.VERTICAL,

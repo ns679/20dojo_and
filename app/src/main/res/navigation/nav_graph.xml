@@ -43,7 +43,7 @@
     </fragment>
     <fragment
         android:id="@+id/memoEditFragment"
-        android:name="jp.co.cyberagent.dojo2020.MemoEditFragment"
+        android:name="jp.co.cyberagent.dojo2020.ui.edit.MemoEditFragment"
         android:label="fragment_memo_edit"
         tools:layout="@layout/fragment_memo_edit">
         <argument
