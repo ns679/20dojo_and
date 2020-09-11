@@ -1,11 +1,16 @@
 package jp.co.cyberagent.dojo2020.ui.home
 
+import android.net.Uri
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import jp.co.cyberagent.dojo2020.R
 import jp.co.cyberagent.dojo2020.data.model.Memo
 import jp.co.cyberagent.dojo2020.databinding.FragmentHomeBinding
@@ -33,19 +38,26 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         with(binding) {
-            createMemoFloatingActionButton.setOnClickListener {
-                findNavController().navigate(R.id.action_homeFragment_to_memoCreateFragment)
-            }
+            createMemoFloatingActionButton.setOnClickListener { showMemoCreateScreen() }
+            profileIconImageButton.setOnClickListener { showProfileScreen() }
 
+            val textAdapter = TextAdapter { showMemoEditScreen("") }
             val linearLayoutManager = LinearLayoutManager(
                 context,
                 LinearLayoutManager.VERTICAL,
                 false
             )
 
-            val textAdapter = TextAdapter() {
-                val action = HomeFragmentDirections.actionHomeFragmentToMemoEditFragment("test_id")
-                findNavController().navigate(action)
+            recyclerView.apply {
+                setHasFixedSize(true)
+                layoutManager = linearLayoutManager
+                adapter = textAdapter
+            }
+
+            homeViewModel.userLiveData.observe(viewLifecycleOwner) { firebaseUserInfo ->
+                val uri = firebaseUserInfo?.imageUri ?: return@observe
+
+                profileIconImageButton.showImage(uri)
             }
 
             homeViewModel.draftListLiveData.observe(viewLifecycleOwner) { drafts ->
@@ -58,38 +70,23 @@ class HomeFragment : Fragment() {
                 textAdapter.textList = (memoList + draftList)
             }
 
-            recyclerView.apply {
-                setHasFixedSize(true)
-                layoutManager = linearLayoutManager
-                adapter = textAdapter
-            }
         }
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        setHasOptionsMenu(true)
+    private fun showMemoCreateScreen() {
+        findNavController().navigate(R.id.action_homeFragment_to_memoCreateFragment)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_home, menu)
-        super.onCreateOptionsMenu(menu, inflater)
+    private fun showProfileScreen() {
+        findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.home_profile_icon_id -> {
-                findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
-                true
-            }
-            R.id.home_create_icon_id -> {
-                findNavController().navigate(R.id.action_homeFragment_to_memoCreateFragment)
-                true
-            }
-            else -> {
-                super.onOptionsItemSelected(item)
-            }
-        }
+    private fun showMemoEditScreen(id: String) {
+        val action = HomeFragmentDirections.actionHomeFragmentToMemoEditFragment(id)
+        findNavController().navigate(action)
     }
 
+    private fun ImageButton.showImage(uri: Uri) {
+        Glide.with(this).load(uri).circleCrop().into(this)
+    }
 }

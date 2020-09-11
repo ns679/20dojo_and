@@ -11,8 +11,7 @@ import com.bumptech.glide.Glide
 import jp.co.cyberagent.dojo2020.R
 import jp.co.cyberagent.dojo2020.data.model.Draft
 import jp.co.cyberagent.dojo2020.data.model.Memo
-import jp.co.cyberagent.dojo2020.databinding.ItemMemoBinding
-import jp.co.cyberagent.dojo2020.ui.widget.CustomBottomSheetDialog.Companion.TAG
+import jp.co.cyberagent.dojo2020.databinding.LayoutMemoItemBinding
 import jp.co.cyberagent.dojo2020.util.Left
 import jp.co.cyberagent.dojo2020.util.Right
 import jp.co.cyberagent.dojo2020.util.Text
@@ -29,7 +28,7 @@ class TextAdapter(
         }
 
     class RecyclerViewHolder(
-        private val binding: ItemMemoBinding
+        private val binding: LayoutMemoItemBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
         private val context = binding.root.context
@@ -96,7 +95,7 @@ class TextAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val binding: ItemMemoBinding = ItemMemoBinding.inflate(inflater, parent, false)
+        val binding = LayoutMemoItemBinding.inflate(inflater, parent, false)
 
         return RecyclerViewHolder(binding)
     }

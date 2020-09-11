@@ -1,22 +1,24 @@
 package jp.co.cyberagent.dojo2020.ui.profile
 
-import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
-import android.view.*
-import androidx.appcompat.app.AppCompatActivity
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.utils.ColorTemplate
 import jp.co.cyberagent.dojo2020.R
+import jp.co.cyberagent.dojo2020.data.model.Account
+import jp.co.cyberagent.dojo2020.data.model.Profile
 import jp.co.cyberagent.dojo2020.databinding.FragmentProfileBinding
-import kotlinx.android.synthetic.main.activity_main.*
+import jp.co.cyberagent.dojo2020.databinding.LayoutAccountItemBinding
+import jp.co.cyberagent.dojo2020.ui.widget.CustomBottomSheetDialog.Companion.TAG
 
 class ProfileFragment : Fragment() {
     private lateinit var binding: FragmentProfileBinding
@@ -39,10 +41,6 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         with(binding) {
-            profileToHomeButton.setOnClickListener {
-                findNavController().navigate(R.id.action_profileFragment_to_homeFragment)
-            }
-
             viewModel.firebaseUserInfo.observe(viewLifecycleOwner) { firebaseUser ->
                 firebaseUser ?: return@observe
 
@@ -51,81 +49,68 @@ class ProfileFragment : Fragment() {
                 Glide.with(view).load(firebaseUser.imageUri).circleCrop().into(iconImageView)
             }
 
+            viewModel.profileLiveData.observe(viewLifecycleOwner) {
+                val itemViewList = listOf(firstAccountItemView, secondAccountItemView)
 
-            viewModel.profileLiveData.observe(viewLifecycleOwner) { profile ->
-                val twitterAccount = profile.accountList?.first { it.serviceName == "twitter" }
-                twitterIdTextView.text = twitterAccount?.id
-                twitterUrlTextView.text = twitterAccount?.url
+                // require feature editing
+                val profile = Profile(
+                    "", "", listOf(
+                        Account("GitHub", "ShebangDog", "https://github.com/ShebangDog"),
+                        Account("Twitter", "ShebangDog", "https://twitter.com/ShebangDog")
+                    )
+                )
 
-                val githubAccount = profile.accountList?.first { it.serviceName == "github" }
-                githubIdTextView.text = githubAccount?.id
-                githubUrlTextView.text = githubAccount?.url
+                val imageList = listOf(R.mipmap.github_logo, R.mipmap.twitter_logo)
+
+                data class Group(
+                    val itemView: LayoutAccountItemBinding,
+                    val account: Account,
+                    val image: Int
+                )
+
+                val list = itemViewList zip profile.accountList.orEmpty() zip imageList
+                val groupList = list.map { (tuple, profile) ->
+                    val (itemView, account) = tuple
+
+                    Group(itemView, account, profile)
+                }
+
+                groupList.forEach { (itemView, account, image) ->
+                    itemView.apply {
+                        idTextView.text = "@${account.id}"
+                        urlTextView.text = account.url
+                        iconImageView.setImageResource(image)
+                    }
+                }
             }
-            reloadButton.setOnClickListener {
-                viewModel.fetchUserData()
-                viewModel.calculateStudyTime()
-                setupPieChart()
+
+            viewModel.pieEntryListLiveData.observe(viewLifecycleOwner) {
+                Log.d(TAG, it.joinToString())
+                showPieChart(it)
             }
+
         }
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        setHasOptionsMenu(true)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_profile,menu)
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId){
-            R.id.profile_create_icon_id -> {
-                findNavController().navigate(R.id.action_profileFragment_to_memoCreateFragment)
-                true
-            }
-            android.R.id.home -> {
-                findNavController().navigate(R.id.action_profileFragment_to_homeFragment)
-                true
-            }
-            else ->{
-                super.onOptionsItemSelected(item)
-            }
-        }
-    }
-
-
-    private fun setupPieChart() {
-
-        val times = listOf(15, 45, 25, 35)
-        val tags = listOf("japanese", "math", "sciense", "english")
-
-        val pieEntries: MutableList<PieEntry> = ArrayList()
-
-        (times zip tags).forEach {
-            pieEntries.add(PieEntry(it.first.toFloat(), it.second))
-        }
-
-        val dataSet = PieDataSet(pieEntries, "category")
+    private fun showPieChart(entryList: List<PieEntry>) {
+        val dataSet = PieDataSet(entryList, "category")
         dataSet.apply {
-            setColors(*ColorTemplate.JOYFUL_COLORS)
             valueTextSize = 12f
             valueTextColor = Color.WHITE
-            //setDrawValues(false) // 数値を削除するか
+
+            setColors(*ColorTemplate.JOYFUL_COLORS)
         }
 
-        val data = PieData(dataSet)
+        binding.pieChart.apply {
+            data = PieData(dataSet)
+            centerText = "Statics"
 
-        val pieChart = binding.pieChart
-        pieChart.apply {
-            this.data = data
             setEntryLabelTextSize(13f)
             setEntryLabelColor(Color.BLACK)
-            centerText = "statistics"
             setCenterTextSize(15f)
             animateY(750)
-            invalidate() //更新
+            invalidate()
         }
     }
+
 }

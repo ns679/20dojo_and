@@ -1,13 +1,18 @@
 package jp.co.cyberagent.dojo2020.ui.create
 
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
 import jp.co.cyberagent.dojo2020.R
 import jp.co.cyberagent.dojo2020.databinding.FragmentMemoCreateBinding
 import jp.co.cyberagent.dojo2020.ui.create.spinner.CustomOnItemSelectedListener
@@ -54,6 +59,12 @@ class MemoCreateFragment : Fragment() {
                 setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             }
 
+            memoCreateViewModel.userLiveData.observe(viewLifecycleOwner) { firebaseUserInfo ->
+                val uri = firebaseUserInfo?.imageUri ?: return@observe
+
+                profileIconImageButton.showImage(uri)
+            }
+
             categorySpinner.apply {
                 adapter = spinnerAdapter
                 onItemSelectedListener = CustomOnItemSelectedListener(
@@ -89,11 +100,6 @@ class MemoCreateFragment : Fragment() {
         setHasOptionsMenu(true)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.menu_list, menu)
-    }
-
     private fun showKeyboard() {
         val manager =
             activityInFragment.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -105,5 +111,9 @@ class MemoCreateFragment : Fragment() {
         CustomBottomSheetDialog().apply {
             show(activityInFragment.supportFragmentManager, TAG)
         }
+    }
+
+    private fun ImageButton.showImage(uri: Uri) {
+        Glide.with(this).load(uri).circleCrop().into(this)
     }
 }

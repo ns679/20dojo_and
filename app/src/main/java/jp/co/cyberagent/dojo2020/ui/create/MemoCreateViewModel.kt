@@ -17,14 +17,15 @@ class MemoCreateViewModel(context: Context) : ViewModel() {
     private val categoryRepository = DI.injectDefaultCategoryRepository(context)
     private val userInfoRepository = DI.injectDefaultUserInfoRepository()
 
-    private val userInfoFlow = userInfoRepository.fetchUserInfo()
+    private val userFlow = userInfoRepository.fetchUserInfo()
+    val userLiveData = userFlow.asLiveData()
 
     val draftListLiveData = liveData<List<Draft>> {
         emitSource(draftRepository.fetchAllDraft().asLiveData())
     }
 
     val categoryListLiveData = liveData {
-        userInfoFlow.accessWithUid { uid ->
+        userFlow.accessWithUid { uid ->
             val categoryListFlow = categoryRepository.fetchAllCategory(uid)
             val categorySetFlow = categoryListFlow.map { it.toSet() }
 
@@ -42,6 +43,6 @@ class MemoCreateViewModel(context: Context) : ViewModel() {
 
     fun addCategory(categoryName: String) = viewModelScope.launch {
 
-        userInfoFlow.accessWithUid { uid -> categoryRepository.saveCategory(uid, categoryName) }
+        userFlow.accessWithUid { uid -> categoryRepository.saveCategory(uid, categoryName) }
     }
 }

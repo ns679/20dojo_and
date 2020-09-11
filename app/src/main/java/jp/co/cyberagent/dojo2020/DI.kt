@@ -14,6 +14,8 @@ import jp.co.cyberagent.dojo2020.data.remote.firestore.memo.DefaultFireStoreMemo
 import jp.co.cyberagent.dojo2020.data.remote.firestore.memo.FireStoreMemoDataSource
 import jp.co.cyberagent.dojo2020.data.remote.firestore.profile.DefaultFireStoreProfileDataSource
 import jp.co.cyberagent.dojo2020.data.remote.firestore.profile.FireStoreProfileDataSource
+import jp.co.cyberagent.dojo2020.test.TestCategoryRepository
+import jp.co.cyberagent.dojo2020.test.TestMemoRepository
 import jp.co.cyberagent.dojo2020.test.TestProfileRepository
 
 object DI {
@@ -65,6 +67,14 @@ object DI {
 
     fun injectTestProfileRepository(): ProfileRepository {
         return TestProfileRepository
+    }
+
+    fun injectTestMemoRepository(): MemoRepository {
+        return TestMemoRepository
+    }
+
+    fun injectTestCategoryRepository(): CategoryRepository {
+        return TestCategoryRepository
     }
 
     fun injectDefaultProfileRepository(context: Context): ProfileRepository {

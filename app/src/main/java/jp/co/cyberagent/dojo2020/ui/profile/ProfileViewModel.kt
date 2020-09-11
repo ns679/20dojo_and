@@ -1,49 +1,49 @@
 package jp.co.cyberagent.dojo2020.ui.profile
 
-import android.content.ContentValues.TAG
 import android.content.Context
-import android.util.Log
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.liveData
+import com.github.mikephil.charting.data.PieEntry
 import jp.co.cyberagent.dojo2020.DI
-import jp.co.cyberagent.dojo2020.data.model.Memo
+import jp.co.cyberagent.dojo2020.data.ext.accessWithUid
 import jp.co.cyberagent.dojo2020.data.model.Profile
-import jp.co.cyberagent.dojo2020.test.FakeRepository
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.combine
 
 class ProfileViewModel(context: Context) : ViewModel() {
 
     private val firebaseUserInfoRepository = DI.injectDefaultUserInfoRepository()
     private val firebaseProfileRepository = DI.injectTestProfileRepository()
-    private val memoRepository = FakeRepository
+    private val memoRepository = DI.injectTestMemoRepository()
+    private val categoryRepository = DI.injectTestCategoryRepository()
 
     private val userFlow = firebaseUserInfoRepository.fetchUserInfo()
     val firebaseUserInfo = userFlow.asLiveData()
 
-    private val profileMutableLiveData: MutableLiveData<Profile> = MutableLiveData()
-    val profileLiveData: LiveData<Profile> = profileMutableLiveData
-
-    fun fetchUserData() = viewModelScope.launch {
-        userFlow.collect { userInfo ->
-            firebaseProfileRepository.fetchProfile(userInfo?.uid).collect {
-                profileMutableLiveData.value = it
-            }
+    val profileLiveData: LiveData<Profile?> = liveData {
+        userFlow.accessWithUid { uid ->
+            emitSource(firebaseProfileRepository.fetchProfile(uid).asLiveData())
         }
     }
 
-    private val studyTimeMutableLiveData: MutableLiveData<Long> = MutableLiveData()
-    val studyTimeLiveData: LiveData<Long> = studyTimeMutableLiveData
+    val pieEntryListLiveData: LiveData<List<PieEntry>> = liveData {
+        userFlow.accessWithUid { uid ->
+            val categoryListFlow = categoryRepository.fetchAllCategory(uid)
+            val memoListFlow = memoRepository.fetchAllMemo(uid)
 
-    fun calculateStudyTime() = viewModelScope.launch {
-        userFlow.collect { userInfo ->
-            memoRepository.fetchAllMemo(userInfo?.uid).collect { memoList ->
-                val totalTime = memoList.fold(0L) { result: Long, memo: Memo ->
+            val entryList = categoryListFlow.combine(memoListFlow) { categoryList, memoList ->
+                categoryList.map { category ->
+                    val totalTimeForEachCategory = memoList
+                        .filter { it.category == category }
+                        .fold(0L) { result, memo -> result + memo.time }
 
-                    result + memo.time
+                    PieEntry(totalTimeForEachCategory.toFloat(), category)
                 }
-
-                Log.d(TAG, totalTime.toString())
             }
+
+            emitSource(entryList.asLiveData())
         }
     }
+
 }
