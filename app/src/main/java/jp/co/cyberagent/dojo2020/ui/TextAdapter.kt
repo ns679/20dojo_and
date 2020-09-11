@@ -1,7 +1,6 @@
 package jp.co.cyberagent.dojo2020.ui
 
 import android.graphics.drawable.Drawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup

@@ -50,14 +50,14 @@ class HomeFragment : Fragment() {
             profileIconImageButton.setOnClickListener { showProfileScreen() }
 
             val textAdapter = TextAdapter(
-                { showMemoEditScreen("") },
+                { showMemoEditScreen(it) },
                 {
                     val memoForSave = it.toMemo(System.currentTimeMillis())
                     homeViewModel.deleteDraft(it)
                     homeViewModel.saveMemo(memoForSave)
                 }
             )
-
+          
             val linearLayoutManager = LinearLayoutManager(
                 context,
                 LinearLayoutManager.VERTICAL,

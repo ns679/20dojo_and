@@ -84,6 +84,10 @@ class ProfileFragment : Fragment() {
                 }
             }
 
+            viewModel.totalTimeLiveData.observe(viewLifecycleOwner) {
+                profileTotalTime.text = it.toString()
+            }
+
             viewModel.pieEntryListLiveData.observe(viewLifecycleOwner) {
                 Log.d(TAG, it.joinToString())
                 showPieChart(it)
