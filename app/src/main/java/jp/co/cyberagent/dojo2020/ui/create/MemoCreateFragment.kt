@@ -3,6 +3,7 @@ package jp.co.cyberagent.dojo2020.ui.create
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -88,6 +89,7 @@ class MemoCreateFragment : Fragment() {
                 val content = contentTextEdit.text.toString()
                 val category = categorySpinner.selectedItem.toString()
 
+                Log.d(TAG, "onClick in MemoCreateFragment")
                 memoCreateViewModel.addDraft(title, content, category)
 
                 findNavController().navigate(R.id.action_createMemoFragment_to_homeFragment)

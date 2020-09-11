@@ -5,11 +5,15 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import jp.co.cyberagent.dojo2020.DI
+import jp.co.cyberagent.dojo2020.data.ext.accessWithUid
+import jp.co.cyberagent.dojo2020.data.model.Draft
 import jp.co.cyberagent.dojo2020.data.model.Memo
-import kotlinx.coroutines.flow.collect
+import jp.co.cyberagent.dojo2020.util.Left
+import jp.co.cyberagent.dojo2020.util.Right
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class HomeViewModel(context: Context) : ViewModel() {
@@ -20,15 +24,25 @@ class HomeViewModel(context: Context) : ViewModel() {
     private val userFlow = firebaseUserInfoRepository.fetchUserInfo()
     val userLiveData = userFlow.asLiveData()
 
-    val memoListLiveData = liveData<List<Memo>> {
-        userFlow.collect { userInfo ->
-            emitSource(memoRepository.fetchAllMemo(userInfo?.uid).asLiveData())
+    val memoListFlow = flow {
+        userFlow.accessWithUid { uid ->
+            val rightList = memoRepository
+                .fetchAllMemo(uid)
+                .map { memoList -> memoList.map { Right(it) } }
+
+            emitAll(rightList)
         }
     }
 
-    val draftListLiveData = liveData {
-        emitSource(draftRepository.fetchAllDraft().asLiveData())
-    }
+    val draftListFlow = draftRepository
+        .fetchAllDraft()
+        .map { draftList -> draftList.map { Left(it) } }
+
+    @FlowPreview
+    val textListLiveData = draftListFlow.combine(memoListFlow) { leftList, rightList ->
+        Log.d(TAG, "onChange in HomeViewModel")
+        leftList + rightList
+    }.asLiveData()
 
     fun filter() = viewModelScope.launch {
         userFlow.collect { userInfo ->
@@ -39,9 +53,13 @@ class HomeViewModel(context: Context) : ViewModel() {
     }
 
     fun saveMemo(memo: Memo) = viewModelScope.launch {
-        userFlow.collect { userInfo ->
-            memoRepository.saveMemo(userInfo?.uid, memo)
-            Log.d(TAG, "uid is ${userInfo?.uid}")
+        userFlow.accessWithUid { uid ->
+            memoRepository.saveMemo(uid, memo)
+            Log.d(TAG, "uid is ${uid}")
         }
+    }
+
+    fun deleteDraft(draft: Draft) = viewModelScope.launch {
+        draftRepository.deleteDraftById(draft.id)
     }
 }

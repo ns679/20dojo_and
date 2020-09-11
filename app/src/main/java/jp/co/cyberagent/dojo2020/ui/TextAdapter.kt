@@ -18,17 +18,20 @@ import jp.co.cyberagent.dojo2020.util.Text
 import java.util.Collections.emptyList
 
 class TextAdapter(
-    private val onItemClickListener: View.OnClickListener
+    private val onItemClickListener: (id: String) -> Unit,
+    private val saveDraftAsMemo: (Draft) -> Unit
 ) : RecyclerView.Adapter<TextAdapter.RecyclerViewHolder>() {
 
     var textList: List<Text> = emptyList()
         set(value) {
             field = value
+            Log.d("Content", "onChange textList in TextAdapter")
             notifyDataSetChanged()
         }
 
     class RecyclerViewHolder(
-        private val binding: LayoutMemoItemBinding
+        private val binding: LayoutMemoItemBinding,
+        private val saveDraftAsMemo: (Draft) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         private val context = binding.root.context
@@ -69,7 +72,7 @@ class TextAdapter(
         private fun setMemo(memo: Memo) {
             binding.apply {
                 titleTextView.text = memo.title
-                contentsTextView.text = memo.contents
+                contentsTextView.text = "Memo" + memo.contents
                 categoryTextView.text = memo.category
 
                 chronometer.apply {
@@ -83,11 +86,16 @@ class TextAdapter(
         private fun setDraft(draft: Draft) {
             binding.apply {
                 titleTextView.text = draft.title
-                contentsTextView.text = draft.title
+                contentsTextView.text = "Draft" + draft.content
                 categoryTextView.text = draft.category
 
                 chronometer.apply {
                     start()
+                }
+
+                timerImageButton.setOnClickListener {
+                    chronometer.stop()
+                    saveDraftAsMemo(draft)
                 }
             }
         }
@@ -97,14 +105,21 @@ class TextAdapter(
         val inflater = LayoutInflater.from(parent.context)
         val binding = LayoutMemoItemBinding.inflate(inflater, parent, false)
 
-        return RecyclerViewHolder(binding)
+        return RecyclerViewHolder(binding, saveDraftAsMemo)
     }
 
     override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
         val text = textList[position]
 
         holder.setText(text)
-        holder.setOnItemClickListener(onItemClickListener)
+        holder.setOnItemClickListener {
+            onItemClickListener(
+                when (text) {
+                    is Left -> text.value.id
+                    is Right -> text.value.id
+                }
+            )
+        }
     }
 
     override fun getItemCount() = textList.size
