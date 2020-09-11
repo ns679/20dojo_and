@@ -10,6 +10,7 @@ import jp.co.cyberagent.dojo2020.DI
 import jp.co.cyberagent.dojo2020.data.ext.accessWithUid
 import jp.co.cyberagent.dojo2020.data.model.Profile
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
 
 class ProfileViewModel(context: Context) : ViewModel() {
 
@@ -23,7 +24,10 @@ class ProfileViewModel(context: Context) : ViewModel() {
 
     val profileLiveData: LiveData<Profile?> = liveData {
         userFlow.accessWithUid { uid ->
-            emitSource(firebaseProfileRepository.fetchProfile(uid).asLiveData())
+            emitSource(firebaseProfileRepository.fetchProfile(uid).onEach {
+                it ?: return@onEach
+                firebaseProfileRepository.saveProfile(uid, it)
+            }.asLiveData())
         }
     }
 
