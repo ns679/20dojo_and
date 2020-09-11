@@ -86,7 +86,7 @@ class DefaultFireStoreMemoDataSource(private val firestore: FirebaseFirestore) :
     }
 
     private fun Memo.toEntityForRemote(): MemoEntity {
-        return MemoEntity(id, title, contents, time)
+        return MemoEntity(id, title, contents, time, category)
     }
 
     private fun MemoEntity.modelOrNull(): Memo? {
