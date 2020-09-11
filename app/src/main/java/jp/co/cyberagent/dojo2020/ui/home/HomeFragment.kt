@@ -12,11 +12,13 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import jp.co.cyberagent.dojo2020.R
+import jp.co.cyberagent.dojo2020.data.model.Draft
 import jp.co.cyberagent.dojo2020.data.model.Memo
 import jp.co.cyberagent.dojo2020.databinding.FragmentHomeBinding
 import jp.co.cyberagent.dojo2020.ui.TextAdapter
 import jp.co.cyberagent.dojo2020.util.Left
 import jp.co.cyberagent.dojo2020.util.Right
+import jp.co.cyberagent.dojo2020.util.Text
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
@@ -61,13 +63,7 @@ class HomeFragment : Fragment() {
             }
 
             homeViewModel.draftListLiveData.observe(viewLifecycleOwner) { drafts ->
-                val memoList = drafts.map {
-                    Right(Memo(it.id, it.title, it.content, it.startTime, it.category))
-                }
-
-                val draftList = drafts.map { Left(it) }
-
-                textAdapter.textList = (memoList + draftList)
+                textAdapter.textList = drafts.toText()
             }
 
         }
@@ -88,5 +84,9 @@ class HomeFragment : Fragment() {
 
     private fun ImageButton.showImage(uri: Uri) {
         Glide.with(this).load(uri).circleCrop().into(this)
+    }
+
+    private fun List<Draft>.toText(): List<Text> = map {
+        Left(it)
     }
 }
